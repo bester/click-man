@@ -13,16 +13,21 @@ import os
 import click
 from pkg_resources import iter_entry_points, get_distribution
 
-from click_man.core import write_man_pages
+from click_man.core import write_man_pages, write_asciidoc_pages
 
 
 @click.command(context_settings={'help_option_names': ['-h', '--help']})
 @click.option('--target', '-t', default=os.path.join(os.getcwd(), 'man'),
               type=click.Path(file_okay=False, dir_okay=True, resolve_path=True),
               help='Target location for the man pages')
+@click.option('--asciidoc', '-a', default=False, is_flag=True,
+              help='Generate asciidoc instead of man pages')
+@click.option('--mansect', '-m', default=1, help='The section number in which the man page should be placed')
+@click.option('--source', '-s', default='Python', help='The source of the command.')
+@click.option('--manual', '-t', default='Commands', help='The title of the manual')
 @click.version_option(get_distribution('click-man').version, '-V', '--version')
 @click.argument('name')
-def cli(target, name):
+def cli(target, asciidoc, name, mansect, source, manual):
     """
     Generate man pages for the scripts defined in the ``console_acripts`` entry point.
 
@@ -45,8 +50,12 @@ def cli(target, name):
 
     click.echo('Load entry point {0}'.format(name))
     cli = entry_point.resolve()
-    click.echo('Generate man pages for {0} in {1}'.format(name, target))
-    write_man_pages(name, cli, version=entry_point.dist.version, target_dir=target)
+    if asciidoc:
+        click.echo('Generate asciidoc pages for {0} in {1}'.format(name, target))
+        write_asciidoc_pages(name, cli, version=entry_point.dist.version, target_dir=target, mansect=mansect, source=source, manual=manual)
+    else:
+        click.echo('Generate man pages for {0} in {1}'.format(name, target))
+        write_man_pages(name, cli, version=entry_point.dist.version, target_dir=target, mansect=mansect, source=source, manual=manual)
 
 
 if __name__ == '__main__':

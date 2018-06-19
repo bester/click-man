@@ -25,7 +25,11 @@ class ManPage(object):
     BOLD_KEYWORD = '.B'
     INDENT_KEYWORDD = '.TP'
 
-    def __init__(self, command):
+    def __init__(self, command, mansect, source, manual):
+        self.mansect = mansect
+        self.source = source
+        self.manual = manual
+
         #: Holds the command of the man page
         self.command = command
 
@@ -67,8 +71,8 @@ class ManPage(object):
         lines = []
 
         # write title and footer
-        lines.append('{0} "{1}" "1" "{2}" "{3}" "{4} Manual"'.format(
-            self.TITLE_KEYWORD, self.command.upper(), self.date, self.version, self.command))
+        lines.append('{0} "{1}" "{5}" "{2}" "{3}" "{4} Manual"'.format(
+            self.TITLE_KEYWORD, self.command.upper(), self.date, self.source, self.manual, self.mansect))
 
         # write name section
         lines.append('{0} NAME'.format(self.SECTION_HEADING_KEYWORD))
@@ -97,10 +101,9 @@ class ManPage(object):
         if self.commands:
             lines.append('{0} COMMANDS'.format(self.SECTION_HEADING_KEYWORD))
             for name, description in self.commands:
-                lines.append(self.PARAGRAPH_KEYWORD)
-                lines.append(r'\fB{0}\fP'.format(name))
-                lines.append('  ' + self.replace_blank_lines(description))
-                lines.append(r'  See \fB{0}-{1}(1)\fP for full documentation on the \fB{1}\fP command.'.format(
-                    self.command, name))
+                lines.append(r'.IP "\fB{0}\fP - {1}"'.format(name,
+                            (' ' + self.replace_blank_lines(description))))
+                lines.append(r'See \fB{0}-{1}({2})\fP for full documentation on the \fB{1}\fP command.'.format(
+                    self.command, name, self.mansect))
 
         return '\n'.join(lines)
