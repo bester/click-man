@@ -17,7 +17,7 @@ from .man import ManPage
 from .asciidoc import AsciidocPage
 
 
-def generate_asciidoc_page(ctx, version=None, mansect=1, source='Python', manual='Commands'):
+def generate_asciidoc_page(ctx, version=None, mansect=1, source='Python', manual='Commands', subcommands={}):
     """
     Generate documentation for the given command.
 
@@ -37,15 +37,17 @@ def generate_asciidoc_page(ctx, version=None, mansect=1, source='Python', manual
         x.get_help_record(None)
         for x in ctx.command.params
         if isinstance(x, click.Option)]
-    commands = getattr(ctx.command, 'commands', None)
+    commands = subcommands
     if commands:
+        names = commands.keys()
+        names.sort
         asciidoc_page.commands = [
-            (k, v.short_help) for k, v in commands.items()]
+            (k, commands[k].short_help) for k in names]
 
     return str(asciidoc_page)
 
 
-def generate_man_page(ctx, version=None, mansect=1, source='Python', manual='Commands'):
+def generate_man_page(ctx, version=None, mansect=1, source='Python', manual='Commands', subcommands={}):
     """
     Generate documentation for the given command.
 
@@ -62,12 +64,46 @@ def generate_man_page(ctx, version=None, mansect=1, source='Python', manual='Com
     man_page.description = ctx.command.help
     man_page.synopsis = ' '.join(ctx.command.collect_usage_pieces(ctx))
     man_page.options = [x.get_help_record(None) for x in ctx.command.params if isinstance(x, click.Option)]
-    commands = getattr(ctx.command, 'commands', None)
+    commands = subcommands
     if commands:
-        man_page.commands = [(k, v.short_help) for k, v in commands.items()]
+        names = commands.keys()
+        names.sort()
+        man_page.commands = [
+            (k, commands[k].short_help) for k in names]
 
     return str(man_page)
 
+
+def write_pages(name, cli, parent_ctx=None, version=None, target_dir=None, mansect=1, source='Python', manual='Commands', generator=None, extension=None):
+    """
+    Generate page files recursively
+    for the given click cli function.
+
+    :param str name: the cli name
+    :param cli: the cli instance
+    :param click.Context parent_ctx: the parent click context
+    :param str target_dir: the directory where the generated
+                           asciidoc pages are stored.
+    """
+    ctx = click.Context(cli, info_name=name, parent=parent_ctx)
+
+    commands = getattr(cli, 'commands', {})
+    subcommands = {}
+    for name, command in commands.items():
+        command_pages = write_pages(name, command, parent_ctx=ctx, version=version, target_dir=target_dir, mansect=mansect, source=source, manual=manual, generator=generator, extension=extension)
+        for cn, ch in command_pages.items():
+            subcommands[cn] = ch
+
+    if not commands or not parent_ctx:
+        page = generator(ctx, version, mansect=mansect, source=source, manual=manual, subcommands=subcommands)
+        path = '{0}.{1}'.format(ctx.command_path.replace(' ', '-'), extension)
+        if target_dir:
+            path = os.path.join(target_dir, path)
+
+        with open(path, 'w+') as f:
+            f.write(page)
+        subcommands[ctx.command_path] = ctx.command
+    return subcommands
 
 def write_asciidoc_pages(name, cli, parent_ctx=None, version=None, target_dir=None, mansect=1, source='Python', manual='Commands'):
     """
@@ -80,19 +116,7 @@ def write_asciidoc_pages(name, cli, parent_ctx=None, version=None, target_dir=No
     :param str target_dir: the directory where the generated
                            asciidoc pages are stored.
     """
-    ctx = click.Context(cli, info_name=name, parent=parent_ctx)
-
-    asciidoc_page = generate_asciidoc_page(ctx, version, mansect=mansect, source=source, manual=manual)
-    path = '{0}.txt'.format(ctx.command_path.replace(' ', '-'))
-    if target_dir:
-        path = os.path.join(target_dir, path)
-
-    with open(path, 'w+') as f:
-        f.write(asciidoc_page)
-
-    commands = getattr(cli, 'commands', {})
-    for name, command in commands.items():
-        write_asciidoc_pages(name, command, parent_ctx=ctx, version=version, target_dir=target_dir, mansect=mansect, source=source, manual=manual)
+    write_pages(name, cli, parent_ctx=parent_ctx, version=version, target_dir=target_dir, mansect=mansect, source=source, manual=manual, generator=generate_asciidoc_page, extension='txt')
 
 
 def write_man_pages(name, cli, parent_ctx=None, version=None, target_dir=None, mansect=1, source='Python', manual='Commands'):
@@ -106,16 +130,4 @@ def write_man_pages(name, cli, parent_ctx=None, version=None, target_dir=None, m
     :param str target_dir: the directory where the generated
                            man pages are stored.
     """
-    ctx = click.Context(cli, info_name=name, parent=parent_ctx)
-
-    man_page = generate_man_page(ctx, version)
-    path = '{0}.{1}'.format(ctx.command_path.replace(' ', '-'), mansect)
-    if target_dir:
-        path = os.path.join(target_dir, path)
-
-    with open(path, 'w+') as f:
-        f.write(man_page)
-
-    commands = getattr(cli, 'commands', {})
-    for name, command in commands.items():
-        write_man_pages(name, command, parent_ctx=ctx, version=version, target_dir=target_dir, mansect=mansect, source=source, manual=manual)
+    write_pages(name, cli, parent_ctx=parent_ctx, version=version, target_dir=target_dir, mansect=mansect, source=source, manual=manual, generator=generate_man_page, extension=mansect)

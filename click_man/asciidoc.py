@@ -60,7 +60,6 @@ class AsciidocPage(object):
         # write title and footer
         lines.append('{0}({1})'.format(self.command.replace(' ', '-').upper(), self.mansect))
         lines.append((3 + len(self.command)) * '=')
-        lines.append(self.command)
         lines.append(':doctype:       manpage')
         lines.append(':man source:    {0}'.format(self.source))
         lines.append(':man manual:    {0}'.format(self.manual))
