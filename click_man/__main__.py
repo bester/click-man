@@ -24,7 +24,7 @@ from click_man.core import write_man_pages, write_asciidoc_pages
               help='Generate asciidoc instead of man pages')
 @click.option('--mansect', '-m', default=1, help='The section number in which the man page should be placed')
 @click.option('--source', '-s', default='Python', help='The source of the command.')
-@click.option('--manual', '-t', default='Commands', help='The title of the manual')
+@click.option('--manual', '-T', default='Commands', help='The title of the manual')
 @click.version_option(get_distribution('click-man').version, '-V', '--version')
 @click.argument('name')
 def cli(target, asciidoc, name, mansect, source, manual):
