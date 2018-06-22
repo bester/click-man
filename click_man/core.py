@@ -40,7 +40,7 @@ def generate_asciidoc_page(ctx, version=None, mansect=1, source='Python', manual
     commands = subcommands
     if commands:
         names = commands.keys()
-        names.sort
+        names.sort()
         asciidoc_page.commands = [
             (k, commands[k].short_help) for k in names]
 

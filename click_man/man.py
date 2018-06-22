@@ -103,7 +103,7 @@ class ManPage(object):
             for name, description in self.commands:
                 lines.append(r'.IP "\fB{0}\fP - {1}"'.format(name,
                             (' ' + self.replace_blank_lines(description))))
-                lines.append(r'See \fB{0}-{1}({2})\fP for full documentation on the \fB{1}\fP command.'.format(
-                    self.command, name, self.mansect))
+                lines.append(r'See \fB{0}({1})\fP.'.format(
+                    name.replace(' ', '-'), self.mansect))
 
         return '\n'.join(lines)

@@ -100,7 +100,6 @@ class AsciidocPage(object):
             for name, description in self.commands:
                 lines.append('*{0}*::'.format(name))
                 lines.append(description)
-                lines.append('    See *{0}-{1}({2})* for full documentation on the *{1}* command.'.format(
-                    self.command.replace(' ', '-'), name, self.mansect))
+                lines.append('    See *{0}({1})*.'.format(name, self.mansect))
 
         return '\n'.join(lines)
