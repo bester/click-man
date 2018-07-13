@@ -58,34 +58,34 @@ class AsciidocPage(object):
         lines = []
 
         # write title and footer
-        lines.append('{0}({1})'.format(self.command.replace(' ', '-').upper(), self.mansect))
-        lines.append((3 + len(self.command)) * '=')
+        lines.append('= {0}({1})'.format(
+            self.command.replace(' ', '-').upper(), self.mansect))
         lines.append(':doctype:       manpage')
         lines.append(':man source:    {0}'.format(self.source))
         lines.append(':man manual:    {0}'.format(self.manual))
         lines.append('')
-        lines.append('NAME')
-        lines.append(len('NAME') * '-')
+        lines.append('== NAME')
         lines.append('{0} - {1}'.format(self.command, self.short_help))
+        lines.append('')
 
         # write synopsis
         lines.append('')
-        lines.append('SYNOPSIS')
-        lines.append(len('SYNOPSIS') * '-')
-        lines.append('{0} {1}'.format(self.command, self.synopsis))
+        lines.append('== SYNOPSIS')
+        lines.append('')
+        lines.append('*{0}* {1}'.format(self.command, self.synopsis))
 
         # write the description
         if self.description:
             lines.append('')
-            lines.append('DESCRIPTION')
-            lines.append(len('DESCRIPTION') * '-')
+            lines.append('== DESCRIPTION')
+            lines.append('')
             lines.append(self.description)
 
         # write the options
         if self.options:
             lines.append('')
-            lines.append('OPTIONS')
-            lines.append(len('OPTIONS') * '-')
+            lines.append('== OPTIONS')
+            lines.append('')
             self.options = [o for o in self.options if o is not None]
             for option, description in self.options:
                 option_unpacked = ['*'+x+'*' for x in option.split('\n')]
@@ -95,8 +95,8 @@ class AsciidocPage(object):
         # write commands
         if self.commands:
             lines.append('')
-            lines.append('COMMANDS')
-            lines.append(len('COMMANDS') * '-')
+            lines.append('== COMMANDS')
+            lines.append('')
             for name, description in self.commands:
                 lines.append('*{0}*::'.format(name))
                 lines.append(description)
