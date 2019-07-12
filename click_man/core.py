@@ -39,7 +39,7 @@ def generate_asciidoc_page(ctx, version=None, mansect=1, source='Python', manual
         if isinstance(x, click.Option)]
     commands = subcommands
     if commands:
-        names = commands.keys()
+        names = list(commands.keys())
         names.sort()
         asciidoc_page.commands = [
             (k, commands[k].short_help) for k in names]
@@ -66,7 +66,7 @@ def generate_man_page(ctx, version=None, mansect=1, source='Python', manual='Com
     man_page.options = [x.get_help_record(None) for x in ctx.command.params if isinstance(x, click.Option)]
     commands = subcommands
     if commands:
-        names = commands.keys()
+        names = list(commands.keys())
         names.sort()
         man_page.commands = [
             (k, commands[k].short_help) for k in names]
