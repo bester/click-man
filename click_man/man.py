@@ -91,7 +91,8 @@ class ManPage(object):
         # write the options
         if self.options:
             lines.append('{0} OPTIONS'.format(self.SECTION_HEADING_KEYWORD))
-            for option, description in self.options:
+            visible_options = [o for o in self.options if o is not None]
+            for option, description in visible_options:
                 lines.append(self.INDENT_KEYWORDD)
                 option_unpacked = option.replace('-', r'\-').split()
                 lines.append(r'\fB{0}\fP{1}'.format(option_unpacked[0], (' ' + ' '.join(option_unpacked[1:])) if len(option_unpacked) > 1 else ''))
